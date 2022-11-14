@@ -50,7 +50,7 @@
 	<div id="accessForm">
 		<div class="login login-action-login wp-core-ui">
 			<div id="login">
-				<div style="text-align:center;font-size:20px;margin-bottom:10px;color:orangered;">QuickApp 2.0</div>
+				<div style="text-align:center;font-size:20px;margin-bottom:10px;color:orangered;">QuickAppJava 3.0</div>
 				<div class="info"><?php //print $info; ?></div>
 				<form id="kfc_form" method="post" style="padding-top:0px;">
 					<div class="info" id="outbox" style="height:50px;z-index:884;margin-top:;"></div>
@@ -68,7 +68,7 @@
 					</p>
 					<p>
 						<label for="db">Base de données</label><br/>
-						<input name="db" id="db" class="input" size="20" type="text" value="banque_db"/>
+						<input name="db" id="db" class="input" size="20" type="text" value="santedb"/>
 					</p>
 					<p>
 						<label for="type_application">Type d'application</label><br/>
@@ -79,7 +79,7 @@
 					</p>
 					<p>
 						<label for="db">Package Name</label><br/>
-						<input name="package_name" id="package_name" class="input" size="100" type="text" value="com.krak.quickapp"/>
+						<input name="package_name" id="package_name" class="input" size="100" type="text" value="net.olea.santemaghreb"/>
 					</p>
 					<p class="submit">
 						<input name="wp-submit" id="btn_valider" class="button button-primary button-large" value="Générer l'application" type="button"/>

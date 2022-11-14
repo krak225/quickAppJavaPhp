@@ -363,19 +363,65 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 		
 		
 		//
-		$JwtUtils = 'package '.$this->pn.'.utils;
+		$JwtUtils = 'package '.$this->pn.';
 
-import com.auth0.jwt.algorithms.Algorithm;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-public class JwtUtils {
-	public static final String SECRET = "MySecret321";
-	public static final String AUTH_HEADER = "Authorization";
-	public static final String PREFIX = "Bearer ";
-	public static final long EXPIRE_ACCESS_TOKEN = 50*60*1000;
-	public static final Algorithm ALGORITHM = Algorithm.HMAC256(SECRET);
-	public static final long EXPIRE_REFRESH_TOKEN = 300*60*1000;
-}
-';
+import '.$this->pn.'.filters.JwtAuthenticationFilter;
+import '.$this->pn.'.filters.JwtAutorizationFilter;
+import '.$this->pn.'.services.UserDetailsServiceImpl;
+
+
+@Configuration
+@EnableWebSecurity
+class SecurityConfig extends WebSecurityConfigurerAdapter{
+	
+	private UserDetailsServiceImpl userDetailsService;
+	
+	
+	public SecurityConfig(UserDetailsServiceImpl userDetailsService) {
+		this.userDetailsService = userDetailsService;
+	}
+
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(userDetailsService);
+	}
+
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.csrf().disable();
+		http.headers().frameOptions().disable();
+		//http.formLogin();
+	    http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	    http.authorizeRequests().antMatchers("/login/**", "/api/auth/refreshToken/**").permitAll();
+	    http.authorizeRequests().antMatchers("/api/users/add/**", "/api/addroletouser/**","/api/roles/add/**").permitAll();
+	    //http.authorizeRequests().antMatchers(HttpMethod.POST, "/api/users/add/**").hasAuthority("ADMIN");
+	    http.authorizeRequests().anyRequest().authenticated();
+	    
+	    http.addFilter(new JwtAuthenticationFilter(authenticationManagerBean()));
+	    http.addFilterBefore(new JwtAutorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+	    
+	}
+
+	
+	@Bean
+	@Override
+	public AuthenticationManager authenticationManagerBean() throws Exception {
+		return super.authenticationManagerBean();
+	}
+	
+	
+	
+}';
 		
 		$file_JwtUtils=$base_url.'/utils/JwtUtils.java';
 		
@@ -1091,22 +1137,6 @@ class QuickAppJavaApplicationTests {
 		
 		
 		
-		//
-		$Statut='package '.$this->pn.'.entities;
-
-public enum Statut {
-    ACTIVE, DESACTIVE, SUPPRIME;
-}
-';
-		
-		$file_Statut=$base_url.'/entities/Statut.java';
-		
-		$fp=fopen($file_Statut, 'w+');
-		fputs($fp, $Statut);
-		fclose($fp);
-		
-		
-		
 		
 		
 		
@@ -1126,22 +1156,13 @@ public enum Statut {
 	//le model
 	$model="package ".$this->pn.".entities;\n\n";
 	
-	$model.="import java.util.Date;\n\n";
-	$model.="import javax.persistence.Column;\n";
-	$model.="import javax.persistence.Entity;\n";
-	$model.="import javax.persistence.EnumType;\n";
-	$model.="import javax.persistence.Enumerated;\n";
-	$model.="import javax.persistence.GeneratedValue;\n";
-	$model.="import javax.persistence.GenerationType;\n";
-	$model.="import javax.persistence.Id;\n\n";
-	$model.="import javax.persistence.OneToMany;\n\n";
-	$model.="import javax.persistence.ManyToOne;\n\n";
-	
-	$model.="import org.hibernate.annotations.ColumnDefault;\n\n";
-	
-	$model.="import lombok.AllArgsConstructor;\n";
-	$model.="import lombok.Data;\n";
-	$model.="import lombok.NoArgsConstructor;\n\n";
+	$model.="import javax.persistence.Entity\n";
+	$model.="import javax.persistence.GeneratedValue\n";
+	$model.="import javax.persistence.GenerationType\n";
+	$model.="import javax.persistence.Id\n";
+	$model.="import lombok.AllArgsConstructor\n";
+	$model.="import lombok.Data\n";
+	$model.="import lombok.NoArgsConstructor\n\n";
 	
 	$model.="@Entity\n";
 	$model.="@Data\n";
@@ -1161,43 +1182,19 @@ public enum Statut {
 			$tab=explode('_',$field_name);
 			$x=sizeof($tab);
 			//si c'est un table parent qui a migré
-			
 			if($tab[$x-1]=='id'){
 				$table_parent=str_replace('_id',null,$field_name);
-				$form.= "\t@ManyToOne()\n";
-				$form.= "\t".'private '.ucfirst($table_parent).'" '.$table_parent.'"'."\n";
+				$model.= "\t".'@OneToMany(mappedBy='.$table_parent.')'."\n";
+				$model.= "\t".'private String '.$table_parent.'"'."\n";
 				
-			}else{
-				//si pas clé parente
-				
+			}else{//si pas clé parente
 				$field_name=str_replace($table.'_',null,$field_name);
-				
-				//champ date
-				if($field_name=='statut'){
-					
-					$model.= "\n";
-					$model.= "\t@ColumnDefault(value = \"\'ACTIVE'\")\n";
-					$model.= "\t@Column(columnDefinition = \"ENUM('ACTIVE', 'DESACTIVE', 'SUPPRIME')\")\n";
-					$model.= "\t@Enumerated(EnumType.STRING)\n";
-					$model.= "\tprivate Statut statut = Statut.ACTIVE;\n";
-					
-				}elseif($tab[0]=='date'){
-					
-					$model.= "\tprivate Date ".$field_name.";\n";
-					
-				}else{
 				// if($d->type=='int'){
 					// $model.= "\t".'private int '.$field_name.';'."\n";
 				// }else{
-					$model.= "\tprivate String ".$field_name.";\n";
+					$model.= "\t".'private String '.$field_name.';'."\n";
 				// }
-				}
-				
-				
 			}
-			
-			
-			
 			
 		}
 		$i++;
@@ -1228,13 +1225,13 @@ public enum Statut {
 	$service.="public interface ".ucfirst($table)."Service {\n\n";
 	
 	$service.="\tList<".ucfirst($table)."> get".ucfirst($table)."s();\n";
-	$service.="\tOptional<".ucfirst($table)."> get".ucfirst($table)."(Long id);\n";
+	$service.="\tOptional ".ucfirst($table)." get".ucfirst($table)."(Long id);\n";
 	
-	$service.="\t".ucfirst($table)." add".ucfirst($table)."(".ucfirst($table)." ".strtolower($table).");\n";
+	$service.="\t".ucfirst($table)." Add".ucfirst($table)."(".ucfirst($table)." ".strtolower($table).");\n";
 	
-	$service.="\t".ucfirst($table)." update".ucfirst($table)."(Long id, ".ucfirst($table)." ".strtolower($table).");\n";
+	$service.="\t".ucfirst($table)." Edit".ucfirst($table)."(Long id, ".ucfirst($table)." ".strtolower($table).");\n";
 	
-	$service.="\tvoid delete".ucfirst($table)."(Long id);\n\n";
+	$service.="\tvoid ".ucfirst($table)." delete".ucfirst($table)."(Long id);\n\n";
 	
 	$service.="}\n";
 	//fin de la page service
@@ -1246,14 +1243,9 @@ public enum Statut {
 	$serviceImpl.="import javax.transaction.Transactional;\n";
 	$serviceImpl.="import org.springframework.stereotype.Service;\n\n";
 
-	$serviceImpl.="import java.sql.Timestamp;\n";
-	$serviceImpl.="import java.time.Instant;\n";
-	$serviceImpl.="import java.util.ArrayList;\n";
-	$serviceImpl.="import java.util.Date;\n";
 	$serviceImpl.="import java.util.List;\n";
 	$serviceImpl.="import java.util.Optional;\n\n";
 	
-	$serviceImpl.="import ".$this->pn.".entities.Statut;\n\n";//cas olea
 	$serviceImpl.="import ".$this->pn.".entities.".ucfirst($table).";\n\n";
 	$serviceImpl.="import ".$this->pn.".entities.".ucfirst($table).";\n\n";
 	$serviceImpl.="import ".$this->pn.".repositories.".ucfirst($table)."Repository;\n\n";
@@ -1276,43 +1268,20 @@ public enum Statut {
 	return $repositoryName.findAll();\n}\n\n";
 	
 	$serviceImpl.="@Override\n";
-	$serviceImpl.='public Optional<'.ucfirst($table).'> get'.ucfirst($table)."(Long id){
+	$serviceImpl.='public Optionnal<'.ucfirst($table).'> get'.ucfirst($table)."(Long id){
 	return $repositoryName.findById(id);\n}\n\n";
 	
+	$serviceImpl.="@Override\n";
+	$serviceImpl.='public '.ucfirst($table).' Add'.ucfirst($table).'('.ucfirst($table).' '.strtolower($table)."){
+	return $repositoryName.save(".strtolower($table).");\n}\n\n";
 	
 	$serviceImpl.="@Override\n";
-	$serviceImpl.="public ".ucfirst($table)." add".ucfirst($table)."(".ucfirst($table)." ".strtolower($table)."){\n";
-	$serviceImpl.="\t".strtolower($table).".setStatut(Statut.ACTIVE);\n";
-	$serviceImpl.="\t".strtolower($table).".setDate_creation(Timestamp.from(Instant.now()));\n";
-	$serviceImpl.="\t".strtolower($table).".setDate_modification(Timestamp.from(Instant.now()));\n";
-	$serviceImpl.="\treturn $repositoryName.save(".strtolower($table).");\n";
-	$serviceImpl.="}\n\n";
-	
+	$serviceImpl.='public '.ucfirst($table).' Edit'.ucfirst($table).'(Long id, '.ucfirst($table).' '.strtolower($table)."){
+	return $repositoryName.save(".strtolower($table).");\n}\n\n";
 	
 	$serviceImpl.="@Override\n";
-	$serviceImpl.="public ".ucfirst($table)." update".ucfirst($table)."(Long id, ".ucfirst($table)." ".strtolower($table)."_new_data){\n";
-	$serviceImpl.="\tOptional<".ucfirst($table)."> otptional".ucfirst($table)."_old  = ".strtolower($table)."Repository.findById(id);\n";
-	$serviceImpl.="\t".ucfirst($table)." ".strtolower($table)."_old = otptional".ucfirst($table)."_old.get();\n\n";
-	
-	$serviceImpl.="\t".strtolower($table)."_new_data.setStatut(".strtolower($table)."_old.getStatut());\n";
-	$serviceImpl.="\t".strtolower($table)."_new_data.setDate_creation(".strtolower($table)."_old.getDate_creation());\n";
-	$serviceImpl.="\t".strtolower($table)."_new_data.setDate_modification(Timestamp.from(Instant.now()));\n\n";
-	
-	$serviceImpl.="\treturn $repositoryName.save(".strtolower($table)."_new_data);\n";
-	$serviceImpl.="}\n\n";
-	
-	
-	$serviceImpl.="@Override\n";
-	$serviceImpl.="public void delete".ucfirst($table)."(Long id){\n";
-	$serviceImpl.="\tOptional<".ucfirst($table)."> otptional".ucfirst($table)." = ".strtolower($table)."Repository.findById(id);\n";
-	$serviceImpl.="\t".ucfirst($table)." ".strtolower($table)." = otptional".ucfirst($table).".get();\n\n";
-	
-	$serviceImpl.="\t".strtolower($table).".setStatut(".strtolower($table).".getStatut());\n";
-	$serviceImpl.="\t".strtolower($table).".setDate_modification(Timestamp.from(Instant.now()));\n\n";
-	
-	$serviceImpl.="\t$repositoryName.deleteById(id);\n";
-	$serviceImpl.="}\n\n";
-	
+	$serviceImpl.='public '.ucfirst($table).' delete'.ucfirst($table)."(Long id){
+	return $repositoryName.delete(id);\n}\n\n";
 	
 	$serviceImpl.='}'."\n";
 	//fin de la page serviceImpl
@@ -1326,11 +1295,9 @@ public enum Statut {
 	$controller.="import java.util.Optional;\n\n";
 
 	$controller.="import org.springframework.security.access.prepost.PostAuthorize;\n";
-	$controller.="import org.springframework.web.bind.annotation.DeleteMapping;\n";
 	$controller.="import org.springframework.web.bind.annotation.GetMapping;\n";
 	$controller.="import org.springframework.web.bind.annotation.PathVariable;\n";
 	$controller.="import org.springframework.web.bind.annotation.PostMapping;\n";
-	$controller.="import org.springframework.web.bind.annotation.PutMapping;\n";
 	$controller.="import org.springframework.web.bind.annotation.RequestBody;\n";
 	$controller.="import org.springframework.web.bind.annotation.RequestMapping;\n";
 	$controller.="import org.springframework.web.bind.annotation.RestController;\n\n";
@@ -1352,24 +1319,24 @@ public enum Statut {
 	$controller.="}\n\n";
 	
 	$controller.='@GetMapping(path="/'.strtolower($table).'s")'."\n";
-	$controller.='public List<'.ucfirst($table)."> get".ucfirst($table)."s(){
-	return $serviceName.get".ucfirst($table)."s();\n}\n\n";
+	$controller.='public List<'.ucfirst($table).'> get'.ucfirst($table)."s(){
+	return $serviceName.findAll();\n}\n\n";
 	
 	$controller.='@GetMapping(path="/'.strtolower($table).'/{id}")'."\n";
-	$controller.='public Optional<'.ucfirst($table).'> get'.ucfirst($table)."(@PathVariable Long id){
-	return $serviceName.get".ucfirst($table)."(id);\n}\n\n";
+	$controller.='public Optionnal<'.ucfirst($table).'> get'.ucfirst($table)."(@PathVariable Long id){
+	return $serviceName.findById(id);\n}\n\n";
 	
 	$controller.='@PostMapping(path="/'.strtolower($table).'")'."\n";
-	$controller.='public '.ucfirst($table).' add'.ucfirst($table).'(@RequestBody '.ucfirst($table).' '.strtolower($table)."){
-	return $serviceName.add".ucfirst($table)."(".strtolower($table).");\n}\n\n";
+	$controller.='public '.ucfirst($table).' Add'.ucfirst($table).'('.ucfirst($table).' '.strtolower($table)."){
+	return $serviceName.save(".strtolower($table).");\n}\n\n";
 	
 	$controller.='@PutMapping(path="/'.strtolower($table).'/{id}")'."\n";
-	$controller.='public '.ucfirst($table).' update'.ucfirst($table).'(@PathVariable Long id, @RequestBody '.ucfirst($table).' '.strtolower($table)."){
-	return $serviceName.update".ucfirst($table)."(id, ".strtolower($table).");\n}\n\n";
+	$controller.='public '.ucfirst($table).' Edit'.ucfirst($table).'(@PathVariable Long id, '.ucfirst($table).' '.strtolower($table)."){
+	return $serviceName.save(".strtolower($table).");\n}\n\n";
 	
 	$controller.='@DeleteMapping(path="/'.strtolower($table).'/{id}")'."\n";
-	$controller.='public void delete'.ucfirst($table)."(@PathVariable Long id){
-	$serviceName.delete".ucfirst($table)."(id);\n}\n\n";
+	$controller.='public '.ucfirst($table).' Delete'.ucfirst($table)."(@PathVariable Long id){
+	return $serviceName.delete(id);\n}\n\n";
 	
 	$controller.="}\n";
 	//fin de la page controller
