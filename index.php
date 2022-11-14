@@ -30,6 +30,7 @@
 						// $('#user').val('');
 						// $('#pass').val('');
 						// $('#db').val('');
+						// $('#package_name').val('');
 						// $('#table').val('');
 						$('#outbox').html(k);
 						// setTimeout(function () { $('#outbox').html(''); }, 3000);
@@ -75,6 +76,10 @@
 							<option value="java">JAVA</option>
 							<option value="php">PHP</option>
 						</select>
+					</p>
+					<p>
+						<label for="db">Package Name</label><br/>
+						<input name="package_name" id="package_name" class="input" size="100" type="text" value="com.krak.quickapp"/>
 					</p>
 					<p class="submit">
 						<input name="wp-submit" id="btn_valider" class="button button-primary button-large" value="Générer l'application" type="button"/>
