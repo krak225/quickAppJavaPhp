@@ -11,7 +11,6 @@
 	public $base_url;
 	
 	public function __construct(){
-		
 		$this->auteur="{'name':'Armand Kouassi', 'email':'krak225@gmail.com', 'telephone':'+225 04 78 36 89'}";
 		$this->pn='com.krak.quickapp';//package name
 		
@@ -21,7 +20,6 @@
 		$this->dbu='root';
 		$this->dbp='';
 		$this->base_url='';
-		
 	}
 	
  	public function connectDB($db,$h='localhost', $u='root',$p=''){
@@ -52,8 +50,7 @@
 	
 	public function createAllForms(){
 		
-		$this->createAPICoreFiles();
-		$this->createWebCoreFiles();
+		$this->createCoreFiles();
 		
 		$db=$this->db;$cpt=0;$err=0;
 		
@@ -84,12 +81,7 @@
 	}
 	
 	
-	private function createAPICoreFiles(){
-		//copie des fichiers du dossier web
-		
-	}
-	
-	private function createAPICoreFiles(){
+	private function createCoreFiles(){
 		
 		$tab = explode('.', $this->pn);
 		
@@ -117,8 +109,6 @@
 		@mkdir($artifactId.'/src/main/java/'.$tab[0].'/'.$tab[1].'/'.$tab[2].'/playload/requests');
 		@mkdir($artifactId.'/src/main/java/'.$tab[0].'/'.$tab[1].'/'.$tab[2].'/playload/responses');
 		@mkdir($artifactId.'/src/main/java/'.$tab[0].'/'.$tab[1].'/'.$tab[2].'/utils');
-		@mkdir($artifactId.'/src/main/java/'.$tab[0].'/'.$tab[1].'/'.$tab[2].'/exceptions');
-		@mkdir($artifactId.'/src/main/java/'.$tab[0].'/'.$tab[1].'/'.$tab[2].'/config');
 		
 		// die();
 		
@@ -162,6 +152,7 @@
 		    <artifactId>java-jwt</artifactId>
 		    <version>4.2.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -187,21 +178,6 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-		  <groupId>org.springframework.boot</groupId>
-		  <artifactId>spring-boot-starter-validation</artifactId>
-		 </dependency>
-		<dependency>
-		    <groupId>io.springfox</groupId>
-		    <artifactId>springfox-boot-starter</artifactId>
-		    <version>3.0.0</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>io.springfox</groupId>
-		    <artifactId>springfox-swagger-ui</artifactId>
-		    <version>3.0.0</version>
 		</dependency>
 	</dependencies>
 
@@ -240,13 +216,7 @@ spring.jpa.hibernate.ddl-auto=create
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
 spring.jpa.properties.hibernate.format_sql=true
-spring.datasource.hikari.data-source-properties.useUnicode=true
-spring.datasource.hikari.data-source-properties.characterEncoding=UTF-8
-server.port=8000
-spring.mvc.pathmatch.matching-strategy=ANT_PATH_MATCHER
-
-allowed.origin = http://localhost:8000
-';
+server.port=7000';
 
 		$file_application_properties=$artifactId.'/src/main/resources/application.properties';
 		
@@ -261,7 +231,6 @@ allowed.origin = http://localhost:8000
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -269,17 +238,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import '.$this->pn.'.entities.Role;
 import '.$this->pn.'.entities.User;
 import '.$this->pn.'.services.AccountService;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.boot.CommandLineRunner;
 
 
 @SpringBootApplication
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class QuickAppJavaApplication{
-	
-	@Autowired
-	private Environment env;
-	
+
 	public static void main(String[] args) {
 		SpringApplication.run(QuickAppJavaApplication.class, args);
 	}
@@ -305,7 +271,7 @@ public class QuickAppJavaApplication{
 			accountService.AddRoleToUser(admin.getUsername(), roleadmin.getRoleName());
 			
 			
-			System.out.println("Server listening on port: " + env.getProperty("server.port"));
+			System.out.println("Server listening on port: 7000");
 		
 		};		
 		
@@ -416,356 +382,6 @@ public class JwtUtils {
 		$fp=fopen($file_JwtUtils, 'w+');
 		fputs($fp, $JwtUtils);
 		fclose($fp);
-		
-		
-		//
-		$ApplicationExceptionHandler = 'package '.$this->pn.'.exceptions;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-@RestControllerAdvice
-public class ApplicationExceptionHandler {
-	
-	
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	//@ExceptionHandler(MethodArgumentNotValidException.class)
-	public Map<String,String> handleInvalidArgument(MethodArgumentNotValidException e){
-		
-		Map<String,String> errorMap = new HashMap<>();
-		e.getBindingResult().getFieldErrors().forEach(error->{
-			errorMap.put(error.getField(), error.getDefaultMessage());
-		});
-		return errorMap;
-	}
-	
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(IllegalArgumentException.class)
-	public Map<String,String> handleInvalidArgument(IllegalArgumentException e){
-		
-		Map<String,String> errorMap = new HashMap<>();
-		errorMap.put("errorMessage", e.getMessage());
-		return errorMap;
-	}
-	
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(ElementNotFoundException.class)
-	public Map<String,String> handleBusinessException(ElementNotFoundException e){
-		
-		Map<String,String> errorMap = new HashMap<>();
-		errorMap.put("errorMessage", e.getMessage());
-		return errorMap;
-	}
-	
-	
-	
-}
-';
-		
-		$file_ApplicationExceptionHandler=$base_url.'/exceptions/ApplicationExceptionHandler.java';
-		
-		$fp=fopen($file_ApplicationExceptionHandler, 'w+');
-		fputs($fp, $ApplicationExceptionHandler);
-		fclose($fp);
-		
-		
-		//
-		$ElementNotFoundException = 'package '.$this->pn.'.exceptions;
-
-public class ElementNotFoundException extends Exception {
-	
-	private static final long serialVersionUID = 1L;
-
-	public ElementNotFoundException(String message) {
-		super(message);
-	}
-}
-';
-		
-		$file_ElementNotFoundException=$base_url.'/exceptions/ElementNotFoundException.java';
-		
-		$fp=fopen($file_ElementNotFoundException, 'w+');
-		fputs($fp, $ElementNotFoundException);
-		fclose($fp);
-		
-		
-		//
-		$CorsConfig = 'package '.$this->pn.'.config;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-@Configuration
-public class CorsConfig {
-	
-	@Value("${allowed.origin}")
-	private String allowedOrigin;
-	
-	@Bean
-	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/api/**")
-				.allowedOrigins("*")
-				.allowedMethods("GET","POST","PUT","DELETE")
-				.allowedHeaders("*");
-			}
-		};
-		
-	}
-}
-';
-		
-		$file_CorsConfig=$base_url.'/config/CorsConfig.java';
-		
-		$fp=fopen($file_CorsConfig, 'w+');
-		fputs($fp, $CorsConfig);
-		fclose($fp);
-		
-		
-		//
-		$SpringFoxConfig = 'package '.$this->pn.'.config;
-
-import java.util.Collections;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-
-@Configuration
-public class SpringFoxConfig {
-	
-	
-	@Bean
-    public Docket api() { 
-        return new Docket(DocumentationType.SWAGGER_2)  
-          .select()
-          .apis(RequestHandlerSelectors.any())              
-          .paths(PathSelectors.any())                          
-          .build()
-          .apiInfo(apiInfo());                                           
-    }
-	
-	private ApiInfo apiInfo() {
-	    return new ApiInfo(
-	      "A REST API by quickApp", 
-	      "An REST API by krak225.", 
-	      "Java Application Genrator", 
-	      "Terms of service", 
-	      new Contact("krak Technologies", "https://www.linkedin.com/in/krak225/", "krak225@gmail.com"), 
-	      "License of API", "API license URL", Collections.emptyList());
-	}
-	
-	
-	
-}
-';
-		
-		$file_SpringFoxConfig=$base_url.'/config/SpringFoxConfig.java';
-		
-		$fp=fopen($file_SpringFoxConfig, 'w+');
-		fputs($fp, $SpringFoxConfig);
-		fclose($fp);
-		
-		
-		
-		$CustomExceptionHandler = 'package '.$this->pn.'.playload.responses;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-@SuppressWarnings({"unchecked","rawtypes"})
-@ControllerAdvice
-public class CustomExceptionHandler extends ResponseEntityExceptionHandler 
-{
-
-  @Override
-  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-    List<Map<String,String>> details = new ArrayList<Map<String,String>>();
-    
-    ex.getBindingResult().getFieldErrors().forEach(error->{
-		Map<String,String> errorMap = new HashMap<>();
-		errorMap.put(error.getField(), error.getDefaultMessage());
-		
-		details.add(errorMap);
-	});
-    
-    ErrorResponse error = new ErrorResponse("Validation Failed", details);
-    
-    return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
-  }
-  
-  @ExceptionHandler(Exception.class)
-  public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
-   ErrorResponse error = new ErrorResponse(ex.getLocalizedMessage());
-    return new ResponseEntity(error, HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-  
- 
-  @ExceptionHandler(RecordNotFoundException.class)
-  public final ResponseEntity<Object> handleRecordNotFoundException(RecordNotFoundException ex, WebRequest request) {
-    ErrorResponse error = new ErrorResponse(ex.getLocalizedMessage());
-    return new ResponseEntity(error, HttpStatus.NOT_FOUND);
-  }
-  
-  
-  @ExceptionHandler(NotFoundException.class)
-  public final ResponseEntity<Object> handleNotFoundException(NotFoundException ex, WebRequest request) {
-	    ErrorResponse error = new ErrorResponse(ex.getLocalizedMessage());
-	    return new ResponseEntity(error, HttpStatus.NOT_FOUND);
-  }
-  
-  
-  
-  
-  @ExceptionHandler(DataIntegrityViolationException.class)
-  protected ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex, WebRequest request) {
-    ErrorResponse error = new ErrorResponse(ex.getMostSpecificCause().getLocalizedMessage());
-    return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
-  }
-  
-  
-  @ExceptionHandler(NoSuchElementException.class)
-  protected ResponseEntity<Object> handleNoSuchElementException(NoSuchElementException ex, WebRequest request) {
-    ErrorResponse error = new ErrorResponse(ex.getLocalizedMessage());
-    return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
-  }
-  
-}';
-		
-		$file_CustomExceptionHandler=$base_url.'/playload/responses/CustomExceptionHandler.java';
-		
-		$fp=fopen($file_CustomExceptionHandler, 'w+');
-		fputs($fp, $CustomExceptionHandler);
-		fclose($fp);
-		
-		
-		$ErrorResponse = 'package '.$this->pn.'.playload.responses;
-
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.annotation.XmlRootElement;
- 
-@XmlRootElement(name = "error")
-public class ErrorResponse 
-{
-
-	public ErrorResponse(String message) {
-		 super();
-		 this.message = message;
-	}
-
-	public ErrorResponse(String message, List<Map<String,String>> details) {
-	    super();
-	    this.message = message;
-	    this.details = details;
-	}
-
-	//response status
-	private int status = 0;
-	
-	//General error message about nature of error
-	private String message;
-	 
-	//Specific errors in API request processing
-	private List<Map<String,String>> details;
-
-	public int getStatus() {
-		return status;
-	}
-
-	public void setStatus(int status) {
-		this.status = status;
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
-	public List<Map<String, String>> getDetails() {
-		return details;
-	}
-
-	public void setDetails(List<Map<String, String>> details) {
-		this.details = details;
-	}
-
-}';
-		
-		$file_ErrorResponse=$base_url.'/playload/responses/ErrorResponse.java';
-		
-		$fp=fopen($file_ErrorResponse, 'w+');
-		fputs($fp, $ErrorResponse);
-		fclose($fp);
-		
-		
-		$RecordNotFoundException = 'package '.$this->pn.'.playload.responses;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
- 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class RecordNotFoundException extends RuntimeException 
-{
-    private static final long serialVersionUID = 1L;
-
-	public RecordNotFoundException(String exception) {
-		super(exception);
-	}
-	
-}';
-		
-		$file_RecordNotFoundException=$base_url.'/playload/responses/RecordNotFoundException.java';
-		
-		$fp=fopen($file_RecordNotFoundException, 'w+');
-		fputs($fp, $RecordNotFoundException);
-		fclose($fp);
-		
-		
-		
-		//pour la suite
-		// $CorsConfig = '';
-		
-		// $file_CorsConfig=$base_url.'/config/CorsConfig.java';
-		
-		// $fp=fopen($file_CorsConfig, 'w+');
-		// fputs($fp, $CorsConfig);
-		// fclose($fp);
 		
 		
 		
@@ -1501,10 +1117,10 @@ public enum Statut {
 		
 		$sql='DESCRIBE '.$table;
 		$stm = $this->dbh->query($sql);
-        $table_fields = $stm->fetchAll();
+        $table_fields = $stm->fetchAll(PDO::FETCH_COLUMN);
 		
 		// debug($table_fields);
-		// die();
+		
 		
 	////
 	//le model
@@ -1518,9 +1134,8 @@ public enum Statut {
 	$model.="import javax.persistence.GeneratedValue;\n";
 	$model.="import javax.persistence.GenerationType;\n";
 	$model.="import javax.persistence.Id;\n\n";
-	$model.="import javax.persistence.OneToMany;\n";
+	$model.="import javax.persistence.OneToMany;\n\n";
 	$model.="import javax.persistence.ManyToOne;\n\n";
-	// $model.="import javax.validation.constraints.NotEmpty;\n\n";
 	
 	$model.="import org.hibernate.annotations.ColumnDefault;\n";
 	$model.="import org.springframework.data.annotation.Transient;\n\n";
@@ -1540,13 +1155,8 @@ public enum Statut {
 	$model.="\tprivate Long id;\n";
 	
 	$i=0;
-	foreach($table_fields as $field){
-		
-		$field_name = $field['Field'];
-		$field_type = $field['Type'];
-		// debug($field_type);
-		
-		// die();
+	foreach($table_fields as $field_name){
+
 		if($i>0 and (strtolower($field_name)!=$table."_statut")){//PERMET DE NE PAS PRENDRE EN COMPTE L'ID DE LA TABLE
 			//test s'il s'agit du clé parent qui a migré alors utilisation d'un select
 			$tab=explode('_',$field_name);
@@ -1570,20 +1180,20 @@ public enum Statut {
 					$model.= "\t@ColumnDefault(value = \"\'DESACTIVE'\")\n";
 					$model.= "\t@Column(columnDefinition = \"ENUM('ACTIVE', 'DESACTIVE', 'SUPPRIME')\")\n";
 					$model.= "\t@Enumerated(EnumType.STRING)\n";
-					$model.= "\tprivate Statut statut = Statut.ACTIVE;\n\n";
+					$model.= "\tprivate Statut statut = Statut.ACTIVE;\n";
 					
 				}elseif($tab[0]=='date'){
 					
 					$model.= "\t@Transient\n";
 					$model.= "\t@Column(nullable=false)\n";
-					$model.= "\tprivate Instant ".$field_name." = Instant.now();\n\n";
+					$model.= "\tprivate Instant ".$field_name." = Instant.now();\n";
 					
 				}else{
-					if($field_type=='int' || $field_type=='bigint' ){
-						$model.= "\tprivate int ".$field_name.";\n\n";
-					}else{
-						$model.= "\tprivate String ".$field_name.";\n\n";
-					}
+				// if($d->type=='int'){
+					// $model.= "\t".'private int '.$field_name.';'."\n";
+				// }else{
+					$model.= "\tprivate String ".$field_name.";\n";
+				// }
 				}
 				
 				
@@ -1676,8 +1286,8 @@ public enum Statut {
 	$serviceImpl.="@Override\n";
 	$serviceImpl.="public ".ucfirst($table)." add".ucfirst($table)."(".ucfirst($table)." ".strtolower($table)."){\n";
 	$serviceImpl.="\t".strtolower($table).".setStatut(Statut.ACTIVE);\n";
-	$serviceImpl.="\t".strtolower($table).".setDate_creation(Instant.now());\n";
-	$serviceImpl.="\t".strtolower($table).".setDate_modification(Instant.now());\n";
+	$serviceImpl.="\t".strtolower($table).".setDate_creation(Timestamp.from(Instant.now()));\n";
+	$serviceImpl.="\t".strtolower($table).".setDate_modification(Timestamp.from(Instant.now()));\n";
 	$serviceImpl.="\treturn $repositoryName.save(".strtolower($table).");\n";
 	$serviceImpl.="}\n\n";
 	
@@ -1689,7 +1299,7 @@ public enum Statut {
 	
 	$serviceImpl.="\t".strtolower($table)."_new_data.setStatut(".strtolower($table)."_old.getStatut());\n";
 	$serviceImpl.="\t".strtolower($table)."_new_data.setDate_creation(".strtolower($table)."_old.getDate_creation());\n";
-	$serviceImpl.="\t".strtolower($table)."_new_data.setDate_modification(Instant.now());\n\n";
+	$serviceImpl.="\t".strtolower($table)."_new_data.setDate_modification(Timestamp.from(Instant.now()));\n\n";
 	
 	$serviceImpl.="\treturn $repositoryName.save(".strtolower($table)."_new_data);\n";
 	$serviceImpl.="}\n\n";
@@ -1701,7 +1311,7 @@ public enum Statut {
 	$serviceImpl.="\t".ucfirst($table)." ".strtolower($table)." = otptional".ucfirst($table).".get();\n\n";
 	
 	$serviceImpl.="\t".strtolower($table).".setStatut(".strtolower($table).".getStatut());\n";
-	$serviceImpl.="\t".strtolower($table).".setDate_modification(Instant.now());\n\n";
+	$serviceImpl.="\t".strtolower($table).".setDate_modification(Timestamp.from(Instant.now()));\n\n";
 	
 	$serviceImpl.="\t$repositoryName.deleteById(id);\n";
 	$serviceImpl.="}\n\n";

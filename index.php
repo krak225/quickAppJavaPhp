@@ -54,36 +54,44 @@
 				<div class="info"><?php //print $info; ?></div>
 				<form id="kfc_form" method="post" style="padding-top:0px;">
 					<div class="info" id="outbox" style="height:50px;z-index:884;margin-top:;"></div>
-					<p>
-						<label for="host">Adresse du serveur MySQL</label><br/>
-						<input name="host" id="host" class="input" value="127.0.0.1" size="20" type="text"/>
-					</p>
-					<p>
-						<label for="user">Utilisateur MySQL</label><br/>
-						<input name="user" id="user" class="input" value="root" size="20" type="text"/>
-					</p>
-					<p>
-						<label for="pass">Mot de passe</label><br/>
-						<input name="pass" id="pass" class="input" value="" size="20" type="text"/>
-					</p>
-					<p>
-						<label for="db">Base de données</label><br/>
-						<input name="db" id="db" class="input" size="20" type="text" value="santedb"/>
-					</p>
-					<p>
-						<label for="type_application">Type d'application</label><br/>
-						<select name="type_application" class="input">
-							<option value="java">JAVA</option>
-							<option value="php">PHP</option>
-						</select>
-					</p>
-					<p>
-						<label for="db">Package Name</label><br/>
-						<input name="package_name" id="package_name" class="input" size="100" type="text" value="net.olea.santemaghreb"/>
-					</p>
-					<p class="submit">
-						<input name="wp-submit" id="btn_valider" class="button button-primary button-large" value="Générer l'application" type="button"/>
-					</p>
+					<table style="padding:0px;">
+						<tr>
+							<td style="width:50%;vertical-align:top;padding-right:5px;">
+								<p>
+									<label for="host">Adresse du serveur MySQL</label><br/>
+									<input name="host" id="host" class="input" value="127.0.0.1" size="20" type="text"/>
+								</p>
+								<p>
+									<label for="user">Utilisateur MySQL</label><br/>
+									<input name="user" id="user" class="input" value="root" size="20" type="text"/>
+								</p>
+								<p>
+									<label for="pass">Mot de passe</label><br/>
+									<input name="pass" id="pass" class="input" value="" size="20" type="text"/>
+								</p>
+							</td>
+							<td style="width:50%;vertical-align:top;padding-left:5px;">
+								<p>
+									<label for="db">Base de données</label><br/>
+									<input name="db" id="db" class="input" size="20" type="text" value="grh_db"/>
+								</p>
+								<p>
+									<label for="type_application">Type d'application</label><br/>
+									<select name="type_application" class="input">
+										<option value="java" selected>JAVA</option>
+										<option value="php">PHP</option>
+									</select>
+								</p>
+								<p>
+									<label for="db">Package Name</label><br/>
+									<input name="package_name" id="package_name" class="input" size="100" type="text" value="net.krak.quickapp"/>
+								</p>
+								<p class="submit">
+									<input name="wp-submit" id="btn_valider" class="button button-primary button-large" value="Générer l'application" type="button"/>
+								</p>
+							</td>
+						</tr>
+					</table>
 				</form>
 			</div>
 			<div class="clear"></div>
