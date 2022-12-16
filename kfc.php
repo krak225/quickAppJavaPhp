@@ -17,8 +17,9 @@ if(isset($_POST['db']) and !empty($_POST['db'])){
 	$kfc->setPackageName($package_name);
 	
 	//Copier le template
-	copyFiles('install/theme-default/'.$type_application.'/', $outpath);
-	
+	// $kfc->copyFiles('install/theme-default/'.$type_application.'/', $outpath);
+	// $kfc->copyFiles('install/theme-default/webapp/', $outpath.'/web/');
+	// die();
 	
 	//création des pages en fonctions des tables
 	if($kfc->createAllForms()){

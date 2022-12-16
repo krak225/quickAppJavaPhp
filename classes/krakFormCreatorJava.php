@@ -84,7 +84,7 @@
 	}
 	
 	
-	private function createAPICoreFiles(){
+	private function createWebCoreFiles(){
 		//copie des fichiers du dossier web
 		
 	}
@@ -1887,6 +1887,9 @@ public enum Statut {
 
  
 	function copyFiles($dir2copy,$dir_paste){
+		
+		
+		
 	  // On vérifie si $dir2copy est un dossier
 	  if (is_dir($dir2copy)) {
 	 
@@ -1897,10 +1900,11 @@ public enum Statut {
 			// Si le dossier dans lequel on veut coller n'existe pas, on le créé
 			if (!is_dir($dir_paste)) mkdir ($dir_paste, 0777);
 	 
-			  // S'il s'agit d'un dossier, on relance la fonction rÃ©cursive
+			  // S'il s'agit d'un dossier, on relance la fonction récursive
 			  if(is_dir($dir2copy.$file) && $file != '..'  && $file != '.') copyFiles( $dir2copy.$file.'/' , $dir_paste.$file.'/' );     
 				// S'il sagit d'un fichier, on le copie simplement
-				elseif($file != '..'  && $file != '.') copy ( $dir2copy.$file , $dir_paste.$file );                                       
+				elseif($file != '..'  && $file != '.') copy ( $dir2copy.$file , $dir_paste.$file );  
+					print_r("File $dir_paste.$file copied !");
 			 }
 	 
 		  // On ferme $dir2copy
